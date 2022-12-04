@@ -5,7 +5,6 @@ import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.Configuration;
 import com.codeborne.selenide.Selenide;
 import cucumber.api.java.After;
-import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
 import org.junit.jupiter.api.BeforeAll;
@@ -24,17 +23,13 @@ public class YandexWeatherSteps {
         Configuration.timeout = 3000;
     }
 
-    @Given("^выбрать город (.*)$")
-    public void selectCity(String city) {
+    @When("^загрузить сайт ЯндексПогода для города (.*)$")
+    public void downloadWebsite(String city) {
         town = city;
-    }
-
-    @When("^загрузить сайт ЯндексПогода$")
-    public void downloadWebsite() {
         open(yandexWeather.getUrl());
         yandexWeather.getCityInputField()
                 .shouldBe(Condition.enabled, Condition.visible)
-                .sendKeys(town);
+                .sendKeys(city);
         yandexWeather.getSuggestions().get(0)
                 .shouldBe(Condition.enabled, Condition.visible)
                 .click();
@@ -47,11 +42,17 @@ public class YandexWeatherSteps {
                 .click();
     }
    // вывести в консоль температуру с сегодняшнего дня и \+ (\d+)дней
-    @Then("^вывести в консоль температуру с сегодняшнего дня по \\+ (\\d+) дня\\(ей\\)$")
+    @Then("^вывести в консоль температуру на количество дней (\\d+)$")
     public void printTemperatureToConsole(int days) {
-        System.out.println("Погода для города " + town + " на " + days + " дня(ей)");
+        int actualDays;
+        if (days > 10){
+            actualDays =10;
+        } else actualDays=days;
+        System.out.println("Погода для города " + town + " на " + actualDays + " дня(ей)");
         System.out.println("--------------------------");
-        for (int i = 0; i < days; i++) {
+
+        for (int i = 0; i < actualDays; i++) {
+
             System.out.println(yandexWeather.getCurrentDay().get(i).getOwnText());
             System.out.println(yandexWeather.getTemperatureMorning().get(i).getOwnText());
             System.out.println(yandexWeather.getTemperatureDay().get(i).getOwnText());
@@ -59,6 +60,7 @@ public class YandexWeatherSteps {
             System.out.println(yandexWeather.getTemperatureNight().get(i).getOwnText());
             System.out.println("--------------------------");
         }
+
     }
 
     @After
